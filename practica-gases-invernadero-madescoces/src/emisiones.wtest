@@ -1,0 +1,133 @@
+import emisiones.*
+
+describe "emisiones" {
+	
+	//CONSTRUCCIÓN PUNTO 1
+
+	// Construir una actividad de Ganaderia con 200 cerdos
+		const ganaderiaPrincipal = new Ganaderia(elementosDeProduccion = 200, elementos = #{new Cerdo()}) 
+	// Construir una actividad de Ganaderia con 50 vacas
+		const ganaderiaSecundaria = new Ganaderia(elementosDeProduccion = 50, elementos = #{new Vaca()})  
+	// Construir una actividad de Forestación con 100 arboles y emite 50 por sus herramientas
+		const bosquePinos = new Forestacion(elementosDeProduccion = 100,elementos = #{new MaquinaForestacion(emisionAnual = 50)}) 
+
+	// Construir una actividad de Ganaderia con 10 cerdos
+		const ganaderiaPequenia = new Ganaderia(elementosDeProduccion = 10, elementos = #{new Cerdo()}) 
+
+	// Construir un campo de superficie 1000 con las actividades ganaderiaPrincipal, ganaderiaSecundaria y bosquePinos
+		//ATENCION! La actividad ganadera pequeña NO es parte de la ponderosa!	
+		const laPonderosa = new Campo(superficie = 1000, actividades = #{bosquePinos,ganaderiaPrincipal,ganaderiaSecundaria})
+	
+	// CONSTRUCCION PUNTO 3
+		// Construir un generador eólico que emite 10 de arranque y es mantenido regularmente
+		const unGeneradorEolico = new GeneradorEolico(emisionArranque = 10) 
+		// Construir un generador diésel que emite 100 por cada unidad de producción 
+		const unGeneradorDiesel = new GeneradorDiesel(emisionPorUnidad = 100) 
+		// Construir una actividad industrial con una producción de 500 y que tiene unGeneradorEolico y unGeneradorDiesel
+		const acme = new Industrial(elementosDeProduccion = 500, elementos = #{unGeneradorEolico, unGeneradorDiesel}) 
+
+	//CONSTRUCCION PUNTO 4.1
+		// Construir una actividad industrial capturadora de gases con produccion de 500 y que tiene unGeneradorEolico y unGeneradorDiesel
+		const vandelay = new IndustrialCapturaGas(elementosDeProduccion = 500, elementos = #{unGeneradorEolico, unGeneradorDiesel})
+	
+	//CONSTRUCCION PUNTO 4.2
+		// Construir un generador EcoDiesel que emite 50 por cada unidad de producción
+		const unEcodiesel = new GeneradorEcoDiesel(emisionPorUnidad = 50) 
+		// Construir una actividad industrial de producción 100 y que tiene solo el generador unEcodiesel 
+		const genco =  new Industrial(elementosDeProduccion = 100, elementos = #{unEcodiesel})
+	
+	//CONSTRUCCION PUNTO 5
+		// Construir un campo que tiene como actividades a vandelay y genco. Su superficie es 200
+		const centroIndustrial = new Campo(superficie = 200, actividades = #{vandelay,genco}) 
+		//Construir una Region que tiene a centroIndustrial y laPonderosa
+		const regionNorte = new Region(campos = #{centroIndustrial,laPonderosa})
+
+	//TESTS PUNTO 1
+	test "emisiones anuales ganaderia" {
+		//verificar que las emisiones de ganaderiaPrincipal es 240000
+		assert.equals(240000,ganaderiaPrincipal.emisionAnual())
+		//verificar que las emisiones de ganaderiaSecundaria es 75000
+		assert.equals(75000,ganaderiaSecundaria.emisionAnual())
+		//verificar que las emisiones de ganaderiaPequenia es 10000
+		assert.equals(10000,ganaderiaPequenia.emisionAnual())
+	}	
+	
+	test "emisiones anuales forestacion" {
+		//verificar que las emisiones de bosquePinos es -9950 (prestar atención a que es negativo)
+		assert.equals(-9950,bosquePinos.emisionAnual())
+	}
+	
+	test "emision de campo" {
+		//verificar que la emision total de la ponderoza es 305050 
+		assert.equals(305050,laPonderosa.emisionAnual())
+		//verificar que la emision superficiel de la ponderoza es 305.05 (prestar atencion que es un numero decimal)
+		assert.equals(305.05,laPonderosa.emisionSuperficial())
+	}
+
+	//TESTS PUNTO 2
+	test "agregar actividad" {
+		//configurar la ley para que permita un máximo de 315000 de emisión 
+		ley.max(315000)
+		// verificar que la actividad ganadera pequeña NO se puede agregar a la Ponderoza
+		// agregar la actividad ganadera candidata a la Ponderoza (NO SE PUEDE!!)
+		assert.throwsExceptionLike(new BussinessException(message = 'No se puede agregar otra actividad, se superó el máximo de emisiones'), { => laPonderosa.addActividad(ganaderiaPequenia)})
+		// verificar que la emisión total de gases de la ponderoza es 305050
+		assert.equals(305050,laPonderosa.emisionAnual())
+		// configurar la ley para que permita un máximo de 320000 de emisión 
+		ley.max(320000)
+		// verificar que la actividad ganadera candidata SI se puede agregar a la Ponderoza
+		assert.that(laPonderosa.leyPermiteActividad(ganaderiaPequenia))
+		// agregar la actividad ganadera candidata a la Ponderoza 
+		laPonderosa.addActividad(ganaderiaPequenia)
+		// verificar que la emisión total de gases de la ponderoza es 315050	
+		assert.that(laPonderosa.existe(ganaderiaPequenia))			 
+	}
+
+	//TESTS PUNTO 3
+	test "Emisión Acme" {
+		// verificar que la emisión de acme es 51060 
+		assert.equals(51060, acme.emisionAnual())
+	}
+	
+	//TEST PUNTO 4.1
+	test "Emision Vandelay" {
+		// verificar que las emisiones de vandelay es 17020
+		assert.equals(17020, vandelay.emisionAnual())
+	}
+	
+	//TEST PUNTO 4.2
+	test "Emision de genco (ecodisel)" {
+		// verificar que las emisiones de genco es 5002
+		assert.equals(5002, genco.emisionAnual())
+	}
+			
+	//TESTS PUNTO 5
+	
+	test "actividades mas emisoras de una region" {
+		// verifica que ganaderiaPrincipal y vandelay son las actividades que más emiten gases de la región norte
+		assert.equals(#{ganaderiaPrincipal,vandelay}, regionNorte.maximosEmisores())
+		
+	}
+	
+	test "region no sana" {
+		// verificar que la region norte no es sana
+		assert.notThat(regionNorte.esSana())
+        // verificar que al consultar por los campos que impiden que la region norte sea sana sólo se obtiene la ponderosa
+        assert.equals(#{laPonderosa},regionNorte.campoContaminate()) 
+	}
+	
+	test "region sana" {
+		// construir un bosque de cedros, que es una actividad forestal de 1000 únidades y 10 por emisión de herramientas
+		const bosqueCedros = new Forestacion(elementosDeProduccion = 1000,elementos = #{new MaquinaForestacion(emisionAnual = 10)})
+		// ajustar la ley para la emisión máxima sea 315000
+		ley.max(315000)
+		// agregar el bosque de cedros a La pondersoa
+		laPonderosa.addActividad(bosqueCedros)
+		// verificar que la region norte es sana
+		assert.that(regionNorte.esSana())
+		// verificar que al consultar por los campos que impiden que la region norte sea sana no se encuentra ninguno
+		assert.equals(#{},regionNorte.campoContaminate())
+	}
+		
+}
+

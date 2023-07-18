@@ -1,0 +1,64 @@
+import parcial.*
+
+describe "El Padrino"{
+	const magnum = new Revolver()
+	const magnumOxidada = new RevolverOxidado()
+	const dagaAfilada = new Daga( peligrosidadBase = 5 )
+	const cuerdaTensa = new CuerdaPiano(tensa = true)
+	const cuerdaDesgastada = new CuerdaPiano(tensa = false)
+	
+	//Les Tanes
+	const vitto = new Persona(armas= [dagaAfilada], tipoMafioso = don)
+	const sonny = new Persona(armas= [magnum, magnumOxidada, cuerdaDesgastada], tipoMafioso = subjefe)
+	const mike = new Persona(armas= [dagaAfilada, magnum], tipoMafioso = subjefe)
+	const mario = new Persona(armas= [cuerdaTensa], tipoMafioso = soldado)
+	
+	//Los del barrio
+	const capone = new Persona(armas= [dagaAfilada, magnum], tipoMafioso = don)
+	const anthony = new Persona(armas= [dagaAfilada], tipoMafioso= subjefe)
+	const frank = new Persona(armas= [dagaAfilada, cuerdaDesgastada], tipoMafioso= soldado)
+	const lgante = new Persona(armas= [dagaAfilada, magnum, cuerdaTensa], tipoMafioso= soldado)
+	const ismael = new Persona(armas= [dagaAfilada, magnumOxidada, cuerdaTensa], tipoMafioso= soldado)
+	
+	const lesTanes = new Familia(mafiosos= [vitto, sonny, mike, mario])
+	const losDelBarrio = new Familia(mafiosos= [capone, anthony, frank, lgante, ismael])
+	 
+	test "Durmiendo con los peces, saber si un mafioso esta vivo o muerto" {
+		assert.that(vitto.vivo())
+		vitto.morir()
+		assert.notThat(vitto.vivo())
+	}
+	
+	test "¡El más peligroso! Encontrar al mafioso vivo con mayor nivel de intimidación de una familia." {
+		assert.equals(sonny, lesTanes.mafiosoMasPeligroso())
+		assert.equals(capone, losDelBarrio.mafiosoMasPeligroso())		
+	}
+	
+	test "sonny elige la magnum como arma" {
+		assert.equals(magnum, sonny.armaElegida())
+	}
+	
+	test "sonny elige cualquier otra arma si ninguna esta en buen estado" {
+		sonny.removerArma(magnum)
+		assert.equals(magnumOxidada, sonny.armaElegida())
+	}
+	
+	test "Ataque sorpresa: Sonny ataca a la familia losDelBarrio y va por capone"{
+		sonny.ataqueSorpresa(losDelBarrio)
+		assert.equals(5, sonny.armaElegida().balas())
+		assert.notThat(capone.vivo())
+	}
+	
+	test "Velorio falla si el don esta vivo" {
+		assert.throwsExceptionLike(new DonExecption(), {losDelBarrio.velar()})
+	}
+	
+	test "Velorio promuebe/degrada correctamente" {
+		capone.morir()
+		losDelBarrio.velar()
+		assert.equals(subjefe, ismael.tipoMafioso())
+		assert.equals(soldado, anthony.tipoMafioso())
+		assert.equals(don, lgante.tipoMafioso())
+		assert.equals(4,lgante.armas().size())
+	}
+}

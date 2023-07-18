@@ -1,0 +1,46 @@
+import chicos.*
+import elementos.*
+import adultos.*
+
+test "La capacidad de susto de jaimito sin disfraces es 0" {
+	assert.equals(0,jaimito.capacidadSusto())
+}
+
+test "Jaimito es timido por lo que asusta la mitad de su capacidad de susto" {
+	jaimito.disfrazar(mascaraFrankenstein)
+	jaimito.disfrazar(trajeDeBruja)
+	assert.equals(16,jaimito.capacidadSusto())	
+}
+
+test "Jaimito se pone dos veces más timido al quitarse un traje" {
+	jaimito.disfrazar(mascaraFrankenstein)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	assert.equals(5,jaimito.capacidadSusto())
+}
+
+test "Jaimito no se siente tan tímido si ya uso el traje más de 2 veces" {
+	jaimito.disfrazar(mascaraFrankenstein)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	
+	assert.equals(11,jaimito.capacidadSusto())
+}
+
+test "Jaimito igualmente no quiere perder sus disfraces, salvo que los conozca mucho" {
+	jaimito.disfrazar(mascaraFrankenstein)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.disfrazar(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	jaimito.quitarDisfraz(trajeDeBruja)
+	jaimito.disfrazar(barba)
+	jaimito.quitarDisfraz(barba)
+	
+	assert.equals(5,jaimito.capacidadSusto())
+}

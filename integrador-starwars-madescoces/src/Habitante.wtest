@@ -1,0 +1,24 @@
+import Habitante.*
+
+
+describe "Tests de Star Wars"{
+
+const anakin // maestro del lado de la luz con sableDeLuz  de potencia 250
+const han
+const chubby
+const ray 
+const halcon = new Arma( desgastada = value, energia = value, poder = value, poderMaximo = value)
+var abandono // suceso con carga emocional negativa 	
+var arrepentimiento // suceso con gran carga emocional positiva 	
+
+test "testAnakinPasaAlLadoOscuro" {
+	anakin.vivirSuceso(abandono)
+	assert.equals("Lado Oscuro", anakin) //arreglar y completar
+}
+
+test "testVaderPasaAlLadoLuminoso" {
+	var darthVader // = ?
+	assert.equals("Lado Luminoso", darthVader) //arreglar y completar
+}
+
+}

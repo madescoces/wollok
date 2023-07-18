@@ -1,0 +1,131 @@
+import pandemia.*
+import persona.*
+import trabajo.*
+import familia.*
+import salida.*
+import exceptions.*
+
+describe "cuerantena" {
+	
+    //Trabajos	
+    const programadore = new TrabajoNormal(bono = 20000, base = 80000, fasePermitida = 3)
+    const docente = new TrabajoNormal(bono = 5000, base = 15000 , fasePermitida = 5)
+    const medique = new TrabajoSanitario(bono = 40000, base = 60000)
+    const panadere = new TrabajoEscencial(bono = 20000, base = 30000)
+    
+    //Personas
+    const milena = new Persona(edad = 25, enFermedadPreexistente = true, trabajos = [docente, programadore])
+    const nicolas = new Persona(edad = 19, enFermedadPreexistente = false, trabajos = [panadere])
+    const mirta = new Persona(edad = 67, enFermedadPreexistente = false, trabajos = [medique])
+    
+    //Familia
+    const perezGarcia = new Familia(personas = [milena, nicolas, mirta])
+           	
+	method initialize() {
+		pandemia.fase(4)
+	} 
+           	
+	test "punto 1.1: ganancia de persona" {		
+		assert.equals(115000, milena.salario()) 	//TODO: verificar que milena gana 115000 
+		assert.equals(35000, nicolas.salario())		//TODO: verificar que nicolas gana 35000 
+		assert.equals(75000, mirta.salario())		//TODO: verificar que mirta gana 75000 
+	}  
+
+	test "punto 1.2: ganancia de familia" {
+		assert.equals(225000, perezGarcia.salarioFamilia())//TODO: verficiar que la familia perezGarcia gana  225000 
+	}
+	 
+	test "punto 1.3: miembros en riesgos" {
+		assert.notThat(perezGarcia.estaAislada()) 		//TODO: verificar que la familia perezGarcia NO está aislada 
+		const familiaDeSoloMirta = new Familia(personas = [mirta])
+		assert.that(familiaDeSoloMirta.estaAislada()) 	//TODO: verificar que la familia familiaDeSoloMirta SI está aislada 
+	}
+
+	test "punto 1.4: trabajos principales" {
+		//TODO: verificar que los trabajos principales de la familia perezGarcia sean programadore, panadere y medique
+		assert.equals([programadore, panadere, medique], perezGarcia.trabajosPrincipales())
+	}
+
+	test "punto 1.5: trabajadores inactivos" {
+		//TODO: verificar que no hay integrantes inactivos de la familia perezGarcia 
+		assert.equals([],perezGarcia.trabajadoresInactivos())
+		//TODO: cambiar la pandemia a fase 1 
+		pandemia.fase(1)
+		//TODO verificar que milena es la unica trabajadora inactiva de la familia perezGarcia
+		assert.equals([milena],perezGarcia.trabajadoresInactivos())
+	}
+
+	test "punto 2.1: puede realizar salida" {
+		 		
+		//TODO: verificar que mirta NO puede salir a comprar
+		assert.notThat(mirta.puedoSalir(new Comprar()))
+		//TODO: verificar que nicolas SI puede salir a comprar
+		assert.that(nicolas.puedoSalir(new Comprar()))
+		//TODO: verificar que nicolas SI puede salir a ejercitarse
+		assert.that(nicolas.puedoSalir(new Ejercitarse()))
+		//TODO: verificar que nicolas SI puede salir a caminar
+		assert.that(nicolas.puedoSalir(new Caminar()))
+		//TODO: verificar que nicolas SI puede salir a trabajar
+		assert.that(nicolas.puedoSalir(new Trabajar()))
+		
+
+		//TODO: pasar la pandemia a fase 3
+		pandemia.fase(3)
+
+		//TODO: verificar que nicolas SI puede salir a comprar
+		assert.that(nicolas.puedoSalir(new Comprar()))
+		//TODO: verificar que nicolas NO puede salir a ejercitarse
+		assert.notThat(nicolas.puedoSalir(new Ejercitarse()))
+		//TODO: verificar que nicolas NO puede salir a caminar
+		assert.notThat(nicolas.puedoSalir(new Caminar()))
+		//TODO: verificar que nicolas SI puede salir a trabajar
+		assert.that(nicolas.puedoSalir(new Trabajar()))		
+	}
+
+	test "punto 2.2, 2.3 y 2.4.1: salir a pasear ok " {
+		const salirAComprar = new Comprar()
+		const salirATrabajar = new Trabajar()
+		
+		//TODO hacer que nicolas salga a comprar
+		nicolas.salir(salirAComprar)		
+		//TODO hacer que nicolas salga a trabajar
+		nicolas.salir(salirATrabajar)
+		//TODO hacer que nicolas salga a comprar
+		nicolas.salir(salirAComprar) 
+		//TODO verificar que las salidas de nicolas son salirAComprar, salirATrabajar y salirAComprar
+		assert.equals([salirAComprar, salirATrabajar, salirAComprar], nicolas.salidasRealizadas())
+	}
+
+	test "punto 2.2, 2.3 y 2.4.2: salir a pasear no ok" {
+		//TODO hacer que milena salga a comprar (No se puede!)
+		assert.throwsExceptionLike(new SalidaException(), { milena.salir(new Comprar())})
+		//TODO verificar que milena no tenga salidas
+		assert.equals([], milena.salidasRealizadas())
+	}
+
+
+	test "punto 3.1: Salida familiar ok" {
+		const salirAComprar = new Comprar()
+		// TODO: hacer que perezGarcia salga a comprar 
+		perezGarcia.salir(salirAComprar)
+		//TODO: verificar que nicolas tenga la salida salirAComprar
+		assert.equals([salirAComprar], nicolas.salidasRealizadas()) 
+		//TODO: verificar que mirta no tenga salidas
+		assert.equals([], mirta.salidasRealizadas())
+		//TODO: verificar que milena no tenga salidas 
+		assert.equals([], milena.salidasRealizadas())
+	}
+
+	test "punto 3.1: Salida familiar no ok" {
+		const familiaMirtaYMilena = new Familia(personas = [mirta,milena])//TODO: obtener/construir una Familia con mirta y milena como integrantes
+		const salirAComprar = new Comprar()
+		
+		//TODO: hacer que la familiaMirtaYMilena salga a comprar (no se puede!)
+		assert.throwsExceptionLike(new SalidaException(), { familiaMirtaYMilena.salir(salirAComprar) })
+
+		//TODO: verificar que mirta no tenga salidas
+		assert.equals([], mirta.salidasRealizadas())
+		//TODO: verificar que milena no tenga salidas
+		assert.equals([], milena.salidasRealizadas())
+	}
+}

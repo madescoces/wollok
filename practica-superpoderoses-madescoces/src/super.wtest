@@ -1,0 +1,191 @@
+import personaje.*
+import poder.*
+import equipo.*
+import peligro.*
+import exceptions.*
+
+
+const altaVelocidad = new Velocidad(rapidez = 2)
+const superVelocidad = new Velocidad(rapidez = 3)
+const vueloRasante = new Vuelo(alturaMaxima = 10, energiaDespegue = 10)
+const vueloAlto = new Vuelo(alturaMaxima = 300, energiaDespegue = 200)
+const vueloRasanteAmplificado = new Amplificador(poderBase = vueloRasante, amplificador = 4)
+const superVelocidadAmplificada = new Amplificador(poderBase = superVelocidad, amplificador = 3)
+
+const capitanaPatriaGrande = new Personaje(estrategia = 3, espiritualidad = 5, poderes=[superVelocidadAmplificada, vueloAlto])
+const plusvaliaCero = new Personaje(estrategia = 2, espiritualidad = 4, poderes=[altaVelocidad, vueloRasanteAmplificado])
+const usinaDerechos = new Personaje(estrategia = 1, espiritualidad = 6, poderes=[vueloRasante])
+const fragmentadorMonopolios = new MetaHumano(estrategia = 1, espiritualidad = 6, poderes=[vueloRasante])
+const educadorPublico = new Mago(poderAcumulado = 12, estrategia = 1, espiritualidad = 6, poderes=[vueloRasante	])
+
+const cooperativaJusticiera = new Equipo(miembros=[capitanaPatriaGrande,plusvaliaCero,usinaDerechos])
+
+const peligroSencillo = new Peligro(radiactivo = false, capacidadBatalla = 30, complejidad = 1, personajesQueSeBanca = 2)
+const peligroSencilloRadiactivo = new Peligro(radiactivo = true, capacidadBatalla = 30, complejidad = 1, personajesQueSeBanca = 2)
+const peligroModerado = new Peligro(radiactivo = true, capacidadBatalla = 50, complejidad = 2, personajesQueSeBanca = 1)
+const peligroAlto = new Peligro(radiactivo = true, capacidadBatalla = 400, complejidad = 3, personajesQueSeBanca = 2)
+
+describe "capacidad de batalla de un poder"{
+	test "superVelocidadAmplificada otorga 576 a Capitana Patria Grande" {
+		assert.equals(576, superVelocidadAmplificada.capacidadBatalla(capitanaPatriaGrande))
+
+	}
+	
+	test "vuelo alto otorga 876 a Capitana Patria Grande" {
+		assert.equals(876, vueloAlto.capacidadBatalla(capitanaPatriaGrande))
+	}
+	
+	test "alta velocidad otorga 72 a Plusvalia Cero" {
+		assert.equals(72, altaVelocidad.capacidadBatalla(plusvaliaCero))
+	}	
+	
+	test "vueloRasanteAmplificado otorga 144 a Plusvalia Cero" {
+		assert.equals(144, vueloRasanteAmplificado.capacidadBatalla(plusvaliaCero))
+	}	
+	
+	test "vueloRasante otorga 49 a usinaDerechos" {
+		assert.equals(49, vueloRasante.capacidadBatalla(usinaDerechos))
+	}		
+}
+
+describe "poder de batalla total de un personaje"{
+	test "capitanaPatriaGrande posee un total de 1452" {
+		assert.equals(1452, capitanaPatriaGrande.capacidadBatalla())
+	}
+	
+	test "plusvaliaCero Grande posee un total de 216" {
+		assert.equals(216, plusvaliaCero.capacidadBatalla())
+	}
+	
+	test "usinaDerechos posee un total de 49" {
+		assert.equals(49, usinaDerechos.capacidadBatalla())
+	}
+}
+
+describe "test de cooperativaJusticiera"{
+	test "El miembro más vulnerable debería ser usinaDerechos"{
+		assert.equals(usinaDerechos, cooperativaJusticiera.miembroMasVulnerable())
+	}
+	
+	test "La calidad del equipo debería ser: 572"{
+		assert.equals(572, cooperativaJusticiera.calidadEquipo())
+	}
+	
+	test "Los mejores poderes son vuelo alto, vuelo rasante amplificado y vuelo rasante"{
+		assert.equals([vueloAlto,vueloRasanteAmplificado,vueloRasante], cooperativaJusticiera.mejoresPoderes())
+	}
+}
+
+describe "los heroes pueden enfrentar ciertos peligros" {
+	test "El peligro Sencillo puede ser afrontado por la capitana, plusvalía y la usina"{
+		assert.that(capitanaPatriaGrande.puedoEnfrentar(peligroSencillo))
+		assert.that(plusvaliaCero.puedoEnfrentar(peligroSencillo))
+		assert.that(usinaDerechos.puedoEnfrentar(peligroSencillo))		
+	}
+	
+	test "El peligro Sencillo es sensato para la cooperativaJusticiera" {
+		assert.that(cooperativaJusticiera.esSensatoAfrontar(peligroSencillo))
+	}
+	
+	test "El peligro peligroSencilloRadiactivo puede ser afrontado por la capitana, plusvalía pero no por la usina"{
+		assert.that(capitanaPatriaGrande.puedoEnfrentar(peligroSencilloRadiactivo))
+		assert.that(plusvaliaCero.puedoEnfrentar(peligroSencilloRadiactivo))
+		assert.notThat(usinaDerechos.puedoEnfrentar(peligroSencilloRadiactivo))		
+	} 
+	
+	test "El peligro peligroModerado puede ser afrontado por la capitana, plusvalía pero no por la usina"{
+		assert.that(capitanaPatriaGrande.puedoEnfrentar(peligroModerado))
+		assert.that(plusvaliaCero.puedoEnfrentar(peligroModerado))
+		assert.notThat(usinaDerechos.puedoEnfrentar(peligroModerado))		
+	} 
+	
+	test "El peligro peligroSencilloRadiactivo y peligroModerado no son sensatos para la cooperativaJusticiera" {
+		assert.notThat(cooperativaJusticiera.esSensatoAfrontar(peligroSencilloRadiactivo))
+		assert.notThat(cooperativaJusticiera.esSensatoAfrontar(peligroModerado))
+	}
+	
+	test "El peligro peligroAlto puede ser afrontado por la capitana, pero no por plusvalía o la usina"{
+		assert.that(capitanaPatriaGrande.puedoEnfrentar(peligroAlto))
+		assert.notThat(plusvaliaCero.puedoEnfrentar(peligroAlto))
+		assert.notThat(usinaDerechos.puedoEnfrentar(peligroAlto))		
+	}
+	
+	test "El peligro peligroAlto no es sensato para la cooperativaJusticiera" {
+		assert.notThat(cooperativaJusticiera.esSensatoAfrontar(peligroAlto))
+	}	
+}
+
+describe "al enfrentar un peligro un heroe puede o no ganar estrategia"{
+	test "Usina puede enfrentar un peligro sencillo, al hacerlo gana 1 punto de experiencia"{
+		assert.equals(1, usinaDerechos.estrategia())
+		usinaDerechos.enfrentarPeligro(peligroSencillo)
+		assert.equals(2, usinaDerechos.estrategia())
+	}
+	
+	test "Usina no puede enfrentar un peligro sencillo radiactivo" {
+		assert.throwsExceptionLike(new PeligroPeligrosoException(), { usinaDerechos.enfrentarPeligro(peligroSencilloRadiactivo)})
+		assert.equals(1, usinaDerechos.estrategia())
+	}
+	
+	test "Usina no puede enfrentar un peligro moderado" {
+		assert.throwsExceptionLike(new PeligroPeligrosoException(), { usinaDerechos.enfrentarPeligro(peligroModerado)})
+		assert.equals(1, usinaDerechos.estrategia())
+	}	
+}
+
+describe "comportamiento de la cooperativa justiciera al enfrentar peligros"{
+	test "Cuando la Cooperativa Justiciera afronta el peligro Moderado, solo la capitana y plusvalia cero 
+	participan, haciendo que los niveles de estrategia pasen a ser 5 para la capitana y 4 para plusvalía cero"{
+		cooperativaJusticiera.enfrentarPeligro(peligroModerado)
+		assert.equals(5, capitanaPatriaGrande.estrategia())
+		assert.equals(4, plusvaliaCero.estrategia())
+		assert.equals(1, usinaDerechos.estrategia())
+	}
+	
+	test "La Cooperativa justiciera no puede afrontar el peligro Alto ya que no le da la cantidad de miembros"{
+		assert.throwsExceptionLike(new MiembrosInsuficientesException(), { cooperativaJusticiera.enfrentarPeligro(peligroAlto) })
+	}
+}
+
+describe "de los magos y metahumanos"{
+	test "El fragmentadorMonopolios posee un poder de 98" {
+		assert.equals(98,fragmentadorMonopolios.capacidadBatalla())	
+	}
+	
+	test "El fragmentadorMonopolios  puede afrontar el peligro sencillo radiactivo, y cuando lo hace su nivel 
+	de estrategia queda en 2 y el de espiritualidad en 7."{
+		fragmentadorMonopolios.enfrentarPeligro(peligroSencilloRadiactivo)
+		assert.equals(2, fragmentadorMonopolios.estrategia())
+		assert.equals(7, fragmentadorMonopolios.espiritualidad())		
+	}
+	
+	test "El fragmentadorMonopolios no puede enfrentar peligroAlto"{
+		assert.notThat(fragmentadorMonopolios.puedoEnfrentar(peligroAlto))
+	}		
+	
+	test "El educadorPublico posee un poder de 110" {
+		assert.equals(110,educadorPublico.capacidadBatalla())	
+	}
+	
+	test "El educadorPublico no puede enfrentar peligroAlto"{
+		assert.notThat(educadorPublico.puedoEnfrentar(peligroAlto))
+	}
+	
+	test "El educadorPublico  puede afrontar el peligro sencillo radiactivo. Cuando lo hace su nivel de 
+	estrategia queda en 2 y el de espiritualidad en 7, y su poder acumulado en 7. Sin embargo si lo vuelve 
+	a enfrentar sus niveles de estrategia y espiritualidad no se alteran (quedan en 2 y 7) y su poder 
+	acumulado disminuye a 2"{
+		educadorPublico.enfrentarPeligro(peligroSencilloRadiactivo)
+		assert.equals(2, educadorPublico.estrategia())
+		assert.equals(7, educadorPublico.espiritualidad())
+		assert.equals(7, educadorPublico.poderAcumulado())
+		educadorPublico.enfrentarPeligro(peligroSencilloRadiactivo)
+		assert.equals(2, educadorPublico.estrategia())
+		assert.equals(7, educadorPublico.espiritualidad())
+		assert.equals(2, educadorPublico.poderAcumulado())
+		educadorPublico.enfrentarPeligro(peligroSencilloRadiactivo)
+		assert.equals(2, educadorPublico.estrategia())
+		assert.equals(7, educadorPublico.espiritualidad())
+		assert.equals(0, educadorPublico.poderAcumulado())
+	}		
+}
